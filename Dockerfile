@@ -1,6 +1,6 @@
 FROM python:3.10.0-slim-buster
 
-COPY /src .
+COPY /src /src
 
 WORKDIR /src
 
