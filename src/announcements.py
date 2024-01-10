@@ -7,7 +7,7 @@ def handle_submit(announcement) -> None:
 def post_announcement() -> None:
   st.write("Welcome to the announcements page")
   st.write("Please enter your announcement below")
-  announcement = st.text_area("Announcement will be sent to all group chats accessible by Ah Gong👴", "Type Here")
+  announcement = st.text_area("Announcement will be sent to all group chats accessible by Ah Gong👴")
   if st.button(":green[Submit]"):
     try:
       handle_submit(announcement)
@@ -19,4 +19,5 @@ def announcement_history() -> None:
   st.write("Here are the previous announcements")
 
 def announcements_view():
+  st.title("Announcements")
   post_announcement()

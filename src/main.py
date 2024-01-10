@@ -1,7 +1,7 @@
 import streamlit as st
 st.set_page_config(layout="wide")
 
-from events import events_view
+from events import events_view, post_event_view
 from announcements import announcements_view
 from feedback import feedback_view
 
@@ -10,21 +10,25 @@ logged_in = True
 
 if logged_in:
     st.sidebar.title("WELCOME! 👋")
-    page = st.sidebar.radio(
-        "Navigation", 
-        ("**Events**", "**Announcements**", "**Feedback**"))
+    add_event_button = st.sidebar.button("Post an event 🙌", use_container_width=True)
+    make_announcement_button = st.sidebar.button("Make announcement 📢", use_container_width=True)
 
-    if page == "**Events**":
-        st.title("Events")
-        events_view()
+    st.sidebar.divider()
+
+    events_button = st.sidebar.button("**Events dashboard**", use_container_width=True, type="primary")
+    feedback_button = st.sidebar.button("**Feedback**", use_container_width=True, type="primary")
     
-    elif page == "**Announcements**":
-        st.title("Announcements")
+    if add_event_button:
+        post_event_view()
+    elif make_announcement_button:
         announcements_view()
-    
-    elif page == "**Feedback**":
+    elif events_button:
+        events_view()
+    elif feedback_button:
         st.title("Feedback")
         feedback_view()
+    else:
+        events_view()
 else:
     # TODO: Implement login page
     st.title("Login")
