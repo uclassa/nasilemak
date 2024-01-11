@@ -2,7 +2,15 @@ import streamlit as st
 from services import post_announcement
 
 def handle_submit(announcement) -> None:
-  # TODO: call API to submit announcement
+  '''
+  Calls the post_announcement API and handles the response.
+
+  Args:
+    announcement (str): The announcement to be sent to all group chats
+
+  Returns:
+    None
+  '''
   res = post_announcement(announcement)
   if res.status_code == 200:
     st.toast("Announcement Submitted", icon='🙌')

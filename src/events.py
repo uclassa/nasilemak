@@ -1,8 +1,17 @@
 import streamlit as st
 import datetime
-from services import Event, get_all_events, post_event, upload_image_file, get_fam_scores, get_num_events, get_num_feedback, delete_event, update_event
+from services import Event, get_all_events, post_event, upload_image_file, get_fam_scores, delete_event, update_event
 
 def handle_delete_event(event_key: str) -> None:
+  '''
+  Creates popup confirmation and calls the delete_event API, handles the response.
+
+  Args:
+    event_key (str): The key of the event to be deleted
+
+  Returns:
+    None
+  '''
   # TODO: Implement modal popup confirmation. Call DELETE event API
 
   res = delete_event(event_key)
@@ -12,8 +21,16 @@ def handle_delete_event(event_key: str) -> None:
     st.error("Event deletion failed")
 
 def handle_edit_event(event: Event) -> None:
-  # TODO: Implement pre-populated modal form.
-  st.write(event)
+  '''
+  Creates pre-populated modal form and calls the update_event API, handles the response.
+
+  Args:
+    event (Event): The event to be updated
+    
+  Returns:
+    None
+  '''
+  # TODO: Implement pre-populated modal form.=
 
   res = update_event(event)
   if res.status_code == 200:
@@ -22,6 +39,8 @@ def handle_edit_event(event: Event) -> None:
     st.error("Event update failed")
 
 def event_list() -> None:
+  # TODO: Implement error message if API call fails
+
   st.title("Event list")
   events = get_all_events().data
 
@@ -92,14 +111,6 @@ def post_event_form() -> None:
 
 def dashboard():
   st.title("Events dashboard")
-  col1, col2 = st.columns(2)
-  with col1:
-    num_events = get_num_events().data
-    st.metric("Events to date", num_events)
-  with col2:
-    num_feedback = get_num_feedback().data
-    st.metric("Feedbacks to date", num_feedback)
-
   st.subheader("Family Leaderboard")
   fam_scores = get_fam_scores().data
   st.bar_chart(fam_scores)
