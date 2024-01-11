@@ -10,12 +10,13 @@ class Response:
     self.data = data
   
 class Event:
-  def __init__(self, name: str, description: str, startTime: str, endTime: str, location: str):
+  def __init__(self, name: str, description: str, start_time: str, end_time: str, location: str, image_url: str = None):
     self.name = name
     self.description = description
-    self.startTime = startTime
-    self.endTime = endTime
+    self.start_time = start_time
+    self.end_time = end_time
     self.location = location
+    self.image_url = image_url
 
 
 def get_all_events() -> Response:
@@ -50,6 +51,10 @@ def get_all_events() -> Response:
 
 def post_event(event: Event) -> Response:
   return Response(200, event)
+
+def upload_image_file(file) -> Response:
+  # TODO: Use Google Drive API to upload file, get URL, and return URL
+  return Response(200, {})
 
 def delete_event(key: str) -> Response:
   return Response(200, {key: "deleted"})

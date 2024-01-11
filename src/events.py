@@ -1,6 +1,6 @@
 import streamlit as st
 import datetime
-from services import Event, get_all_events, post_event, get_fam_scores, get_num_events, get_num_feedback, delete_event, update_event
+from services import Event, get_all_events, post_event, upload_image_file, get_fam_scores, get_num_events, get_num_feedback, delete_event, update_event
 
 def handle_delete_event(event_key: str) -> None:
   # TODO: Implement modal popup confirmation. Call DELETE event API
@@ -69,16 +69,26 @@ def post_event_form() -> None:
     
     location = st.text_input("**Location**")
     uploaded_file = st.file_uploader("Upload an image. This image will be used as the cover photo on the website.", type=["png", "jpg", "jpeg"])
-    
     submit = st.form_submit_button("**Submit**")
 
   if submit:
     event = Event(name, description, start_date_time, end_date_time, location)
+    
+    if uploaded_file is not None:
+      res = upload_image_file(uploaded_file)
+      if res.status_code == 200:
+        st.toast("Image uploaded", icon='📷')
+      else:
+        st.error("Image upload failed. Default image will be used.")
+    else:
+      st.warning("No image uploaded. Default image will be used.")
+    
+    # TODO: include obtained image URL in event object
     res = post_event(event)
     if res.status_code == 200:
       st.toast("Event Submitted", icon='✨')
     else:
-      st.error("Event submission failed")
+      st.error("Event submission failed.", res.data)
 
 def dashboard():
   st.title("Events dashboard")
