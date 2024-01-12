@@ -1,8 +1,26 @@
+import extra_streamlit_components as stx
 import requests
 import json
 import os
 
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
+
 # DJANGO_BACKEND = os.getenv("DJANGO_BACKEND")
+
+class CookieManager:
+  manager = stx.CookieManager()
+
+  def __init__(self):
+    self.manager.set("login_state", 0)
+  
+  def get_all(self):
+    return self.manager.get_all()
+
+  def set(self, cookie: str, value: int):
+    self.manager.set(cookie, value)
+
+_cookie_manager = CookieManager()
 
 class Response:
   def __init__(self, status_code: int, data: dict):
@@ -22,6 +40,27 @@ class Announcement:
   def __init__(self, message: str, read_flag: bool = False):
     self.message = message
     self.read_flag = read_flag
+    
+
+def get_google_id_token(auth_code, client_id):
+  token = id_token.fetch_id_token(google_requests.Request(), auth_code, client_id)
+  return token
+
+def google_auth_login() -> Response:
+  '''
+  Sends POST request to backend to login with Google Auth.
+
+  Returns:
+    Response: Response object containing the status code and data or error message
+  '''
+  # TODO: Implement Google Auth call
+  _cookie_manager.set("login_state", "1")
+  return Response(200, {})
+
+def get_login_state():
+  cookies = _cookie_manager.get_all()
+  return cookies["login_state"] == 1
+
 
 def get_all_events() -> Response:
   '''
