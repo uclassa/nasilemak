@@ -7,6 +7,8 @@ from events import events_view, post_event_view
 from announcements import announcements_view
 from feedback import feedback_view
 
+from auth import get_login_str, display_user
+
 login_state = get_login_state()
 
 if login_state == True:
@@ -32,14 +34,13 @@ if login_state == True:
     events_view()
 else:
   st.title("UCLA SSA Admin Portal 🦁")
-  
-  with st.form('login_form'):
-    st.title('Login')
-    submit_button = st.form_submit_button(label='SIGN IN WITH GOOGLE', on_click=google_auth_login)
 
-    # if submit_button:
-    #   res = google_auth_login()
-    #   if res.status_code == 200:
-    #     st.success("Login successful")
-    #   else:
-    #     st.error("Login failed", res.data)
+  st.write(get_login_str(), unsafe_allow_html=True)
+  if st.button("display user"):  
+    display_user()
+  
+  st.title('Login')
+  submit_button = st.button(label='SIGN IN WITH GOOGLE')
+  if submit_button:
+    st.redirect_to_url(google_auth_login())
+

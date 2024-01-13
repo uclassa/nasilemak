@@ -3,9 +3,6 @@ import requests
 import json
 import os
 
-from google.oauth2 import id_token
-from google.auth.transport import requests as google_requests
-
 # DJANGO_BACKEND = os.getenv("DJANGO_BACKEND")
 
 class CookieManager:
@@ -40,11 +37,7 @@ class Announcement:
   def __init__(self, message: str, read_flag: bool = False):
     self.message = message
     self.read_flag = read_flag
-    
 
-def get_google_id_token(auth_code, client_id):
-  token = id_token.fetch_id_token(google_requests.Request(), auth_code, client_id)
-  return token
 
 def google_auth_login() -> Response:
   '''
@@ -53,7 +46,7 @@ def google_auth_login() -> Response:
   Returns:
     Response: Response object containing the status code and data or error message
   '''
-  # TODO: Implement Google Auth call
+    
   _cookie_manager.set("login_state", "1")
   return Response(200, {})
 
