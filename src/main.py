@@ -1,15 +1,15 @@
-from services import get_login_state, google_auth_login
-
 import streamlit as st
 st.set_page_config(layout="wide")
+
+from services import get_login_state
 
 from events import events_view, post_event_view
 from announcements import announcements_view
 from feedback import feedback_view
 
-from auth import get_login_str, display_user
+from auth import authenticate, auth_sign_in
 
-login_state = get_login_state()
+login_state = get_login_state().data
 
 if login_state == True:
   st.sidebar.title("WELCOME! 👋")
@@ -34,13 +34,16 @@ if login_state == True:
     events_view()
 else:
   st.title("UCLA SSA Admin Portal 🦁")
-
-  st.write(get_login_str(), unsafe_allow_html=True)
-  if st.button("display user"):  
-    display_user()
   
   st.title('Login')
-  submit_button = st.button(label='SIGN IN WITH GOOGLE')
-  if submit_button:
-    st.redirect_to_url(google_auth_login())
+  authenticate_button = st.button(label='AUTHENTICATE WITH GOOGLE', on_click=authenticate)
 
+  try:
+    code = st.experimental_get_query_params()['code']
+  except:
+    code = None
+
+  if code:
+    sign_in_button = st.button(label='Sign in')
+    if sign_in_button:
+      auth_sign_in()

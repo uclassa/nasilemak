@@ -2,6 +2,7 @@ import streamlit as st
 import datetime
 from services import Event, get_all_events, post_event, upload_image_file, get_fam_scores, delete_event, update_event
 
+
 def handle_delete_event(event_key: str) -> None:
   '''
   Creates popup confirmation and calls the delete_event API, handles the response.
@@ -20,6 +21,7 @@ def handle_delete_event(event_key: str) -> None:
   else:
     st.error("Event deletion failed")
 
+
 def handle_edit_event(event: Event) -> None:
   '''
   Creates pre-populated modal form and calls the update_event API, handles the response.
@@ -37,6 +39,7 @@ def handle_edit_event(event: Event) -> None:
     st.toast("Event updated", icon='📝')
   else:
     st.error("Event update failed")
+
 
 def event_list() -> None:
   # TODO: Implement error message if API call fails
@@ -67,6 +70,7 @@ def event_list() -> None:
                 on_click=handle_delete_event, 
                 args=(event['key'])
                 )
+
 
 def post_event_form() -> None:
   with st.form("Add Event"):
@@ -109,15 +113,18 @@ def post_event_form() -> None:
     else:
       st.error("Event submission failed.", res.data)
 
+
 def dashboard():
   st.title("Events dashboard")
   st.subheader("Family Leaderboard")
   fam_scores = get_fam_scores().data
   st.bar_chart(fam_scores)
 
+
 def events_view():
   dashboard()
   event_list()
+
 
 def post_event_view():
   st.title("Post an event")

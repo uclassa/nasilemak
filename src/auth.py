@@ -1,6 +1,9 @@
 import os
 import streamlit as st
 import asyncio
+import extra_streamlit_components as stx
+
+from services import set_login_state
 from httpx_oauth.clients.google import GoogleOAuth2
 from dotenv import load_dotenv
 
@@ -8,10 +11,21 @@ load_dotenv('.env')
 CLIENT_ID = os.environ['CLIENT_ID']
 CLIENT_SECRET = os.environ['CLIENT_SECRET']
 REDIRECT_URI = os.environ['REDIRECT_URI']
+SSA_GMAIL_ID = os.environ['SSA_GMAIL_ID']
 
 
+def nav_to(url):
+  nav_script = """
+    <meta http-equiv="refresh" content="0; url='%s'">
+  """ % (url)
+  return st.write(nav_script, unsafe_allow_html=True)
+
+    
 async def get_authorization_url(client: GoogleOAuth2, redirect_uri: str):
-  authorization_url = await client.get_authorization_url(redirect_uri, scope=["email", "profile"])
+  authorization_url = await client.get_authorization_url(
+                                  redirect_uri, 
+                                  scope=["email", "profile"], 
+                                )
   return authorization_url
 
 
@@ -25,20 +39,29 @@ async def get_email(client: GoogleOAuth2, token: str):
   return user_id, user_email
 
 
-def get_login_str():
+def authenticate():
   client: GoogleOAuth2 = GoogleOAuth2(CLIENT_ID, CLIENT_SECRET)
-  authorization_url = asyncio.run(
-    get_authorization_url(client, REDIRECT_URI))
-  return f''' < a target = "_self" href = "{authorization_url}" > Google login < /a > '''
+  authorization_url = asyncio.run(get_authorization_url(client, REDIRECT_URI))
+  
+  try:
+    asyncio.run(nav_to(authorization_url))
+    code = st.experimental_get_query_params()['code']
+    token = asyncio.run(get_access_token(client, REDIRECT_URI, code))
+    user_id, user_email = asyncio.run(get_email(client, token['access_token']))
+    
+    if user_id == SSA_GMAIL_ID:
+      set_login_state(user_id)
+  
+  except Exception as e:
+    print(e)
 
 
-def display_user():
+def auth_sign_in():
   client: GoogleOAuth2 = GoogleOAuth2(CLIENT_ID, CLIENT_SECRET)
-  # get the code from the url
   code = st.experimental_get_query_params()['code']
-  token = asyncio.run(get_access_token(
-    client, REDIRECT_URI, code))
-  user_id, user_email = asyncio.run(
-    get_email(client, token['access_token']))
-  st.write(
-    f"You're logged in as {user_email} and id is {user_id}")
+  token = asyncio.run(get_access_token(client, REDIRECT_URI, code))
+  user_id, user_email = asyncio.run(get_email(client, token['access_token']))
+  
+  if user_id == SSA_GMAIL_ID:
+    set_login_state(user_id)
+  

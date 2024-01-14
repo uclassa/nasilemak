@@ -3,13 +3,18 @@ import requests
 import json
 import os
 
-# DJANGO_BACKEND = os.getenv("DJANGO_BACKEND")
+from dotenv import load_dotenv
+
+load_dotenv(".env")
+# DJANGO_BACKEND = os.environ["DJANGO_BACKEND"]
+SSA_GMAIL_ID = os.environ["SSA_GMAIL_ID"]
+
 
 class CookieManager:
   manager = stx.CookieManager()
 
   def __init__(self):
-    self.manager.set("login_state", 0)
+    return
   
   def get_all(self):
     return self.manager.get_all()
@@ -19,11 +24,13 @@ class CookieManager:
 
 _cookie_manager = CookieManager()
 
+
 class Response:
   def __init__(self, status_code: int, data: dict):
     self.status_code = status_code
     self.data = data
   
+
 class Event:
   def __init__(self, name: str, description: str, start_time: str, end_time: str, location: str, image_url: str = None):
     self.name = name
@@ -39,20 +46,38 @@ class Announcement:
     self.read_flag = read_flag
 
 
-def google_auth_login() -> Response:
+def set_login_state(state: str) -> Response:
   '''
-  Sends POST request to backend to login with Google Auth.
+  Sets the current login state in the cookie manager.
+
+  Args:
+    state (str): The current login state
 
   Returns:
     Response: Response object containing the status code and data or error message
   '''
     
-  _cookie_manager.set("login_state", "1")
-  return Response(200, {})
+  _cookie_manager.set("login_state", state)
+  return Response(200, {"Login state": "set"})
 
-def get_login_state():
+
+def get_login_state() -> Response:
+  '''
+  Gets the current login state from the cookie manager if it exists, else None.
+
+  Returns:
+    Response: Status code followed by current login state or None if user ID is not found in cookies.
+  '''
   cookies = _cookie_manager.get_all()
-  return cookies["login_state"] == 1
+
+  if "login_state" not in cookies:
+    return Response(204, False)
+  else:
+    # TODO: Check if stored cookie matches with backend
+    if cookies["login_state"] == SSA_GMAIL_ID:
+      return Response(200, True)
+    else:
+      return Response(200, False)
 
 
 def get_all_events() -> Response:
@@ -92,6 +117,7 @@ def get_all_events() -> Response:
 
   return Response(200, res)
 
+
 def post_event(event: Event) -> Response:
   '''
   Sends POST request to backend to create a new event.
@@ -103,6 +129,7 @@ def post_event(event: Event) -> Response:
     Response: Response object containing the status code and data or error message
   '''
   return Response(200, event)
+
 
 def upload_image_file(file) -> Response:
   '''
@@ -117,6 +144,7 @@ def upload_image_file(file) -> Response:
   # TODO: Use Google Drive API to upload file, get URL, and return URL
   return Response(200, {})
 
+
 def delete_event(key: str) -> Response:
   '''
   Sends DELETE request to backend to delete an event via a given key.
@@ -128,6 +156,7 @@ def delete_event(key: str) -> Response:
     Response: Response object containing the status code and data or error message
   '''
   return Response(200, {key: "deleted"})
+
 
 def update_event(event: Event) -> Response:
   '''
@@ -178,6 +207,7 @@ def post_announcement(announcement_text: str) -> Response:
   '''
   announcement = Announcement(announcement_text)
   return Response(200, {announcement_text: "sent"})
+
 
 def get_fam_scores() -> Response:
   '''
