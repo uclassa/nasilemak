@@ -89,6 +89,11 @@ def auth_sign_in(code: str) -> bool:
   '''
   Checks if the current logged in user is authorized to access the admin portal.
 
+  Args:
+    code (str): The code that is returned after the user signs in
+  
+  Returns:
+    bool: True if the user is authorized, False otherwise
   '''
   client = GoogleOAuth2(CLIENT_ID, CLIENT_SECRET)
   token = asyncio.run(get_access_token(client, REDIRECT_URI, code))
