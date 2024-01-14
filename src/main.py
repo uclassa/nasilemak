@@ -33,9 +33,7 @@ if login_state == True:
   else:
     events_view()
 else:
-  st.title("UCLA SSA Admin Portal 🦁")
-  
-  st.title('Login')
+  st.title("WELCOME TO THE UCLA SSA Admin Portal 🦁")
   authenticate_button = st.button(label='AUTHENTICATE WITH GOOGLE', on_click=authenticate)
 
   try:
@@ -44,6 +42,9 @@ else:
     code = None
 
   if code:
+    st.subheader("Account verified! Please sign in to continue.")
     sign_in_button = st.button(label='Sign in')
     if sign_in_button:
-      auth_sign_in()
+      success = auth_sign_in(code)
+      if not success:
+        st.error("You are not authorized to access this portal.")
