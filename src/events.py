@@ -1,69 +1,52 @@
 import streamlit as st
+import datetime
+from services import Event, get_all_events, post_event, upload_image_file, get_fam_scores, delete_event, update_event
 
-events = [
-  {
-    "name": "Event 1",
-    "description": "This is the first event",
-    "startTime": "2021-10-01T00:00:00Z",
-    "endTime": "2021-10-01T01:00:00Z",
-    "location": "Online",
-    "key": "1"
-  },
-  {
-    "name": "Event 2",
-    "description": "This is the second event",
-    "startTime": "2021-10-02T00:00:00Z",
-    "endTime": "2021-10-02T01:00:00Z",
-    "location": "Online",
-    "key": "2"
-  },
-  {
-    "name": "Event 3",
-    "description": "This is the third event",
-    "startTime": "2021-10-03T00:00:00Z",
-    "endTime": "2021-10-03T01:00:00Z",
-    "location": "Online",
-    "key": "3"
-  }
-]
 
-def add_event(name, description, startTime, endTime, location) -> None:
-  # TODO: Call POST event API
+def handle_delete_event(event_key: str) -> None:
+  '''
+  Creates popup confirmation and calls the delete_event API, handles the response.
 
-  events.append({
-    "name": name,
-    "description": description,
-    "startTime": startTime,
-    "endTime": endTime,
-    "location": location
-  }
-)
+  Args:
+    event_key (str): The key of the event to be deleted
 
-def handle_create_event() -> None:
-  # TODO: Make this a modal popup
-  with st.form("Add Event"):
-    name = st.text_input("Name")
-    description = st.text_input("Description")
-    startTime = st.text_input("Start Time")
-    endTime = st.text_input("End Time")
-    location = st.text_input("Location")
-    submit = st.form_submit_button("Submit")
-    st.file_uploader("Upload an image. This image will be used as the cover photo on the website.")
-
-  if submit:
-    add_event(name, description, startTime, endTime, location)
-    print(events)
-
-def handle_delete_event(event_key) -> None:
+  Returns:
+    None
+  '''
   # TODO: Implement modal popup confirmation. Call DELETE event API
-  pass
 
-def handle_edit_event(event) -> None:
-  # TODO: Implement pre-populated modal form. Call PUT event API
-  pass
+  res = delete_event(event_key)
+  if res.status_code == 200:
+    st.toast("Event deleted", icon='🗑️')
+  else:
+    st.error("Event deletion failed")
+
+
+def handle_edit_event(event: Event) -> None:
+  '''
+  Creates pre-populated modal form and calls the update_event API, handles the response.
+
+  Args:
+    event (Event): The event to be updated
+    
+  Returns:
+    None
+  '''
+  # TODO: Implement pre-populated modal form.=
+
+  res = update_event(event)
+  if res.status_code == 200:
+    st.toast("Event updated", icon='📝')
+  else:
+    st.error("Event update failed")
+
 
 def event_list() -> None:
-  # TODO: Call GET event API
+  # TODO: Implement error message if API call fails
+
+  st.title("Event list")
+  events = get_all_events().data
+
   for event in events:
     name_col, desc_col, start_col, end_col, loc_col, edit_col, del_col = st.columns(7)
 
@@ -78,11 +61,73 @@ def event_list() -> None:
     with loc_col:
       st.write(event['location'])
     with edit_col:
-      edit = st.button("**EDIT**", key={"edit" + event['name']}, on_click=handle_edit_event(event))
+      st.button("**EDIT**", key={"edit" + event['name']}, 
+                on_click=handle_edit_event, 
+                args=([Event(event['name'], event['description'], event['startTime'], event['endTime'], event['location'])])
+                )
     with del_col:
-      delete = st.button("DELETE", key={"delete" + event['name']}, type="primary", on_click=handle_delete_event(event['key']))
+      st.button("DELETE", key={"delete" + event['name']}, type="primary", 
+                on_click=handle_delete_event, 
+                args=(event['key'])
+                )
+
+
+def post_event_form() -> None:
+  with st.form("Add Event"):
+    name = st.text_input("**Event Title**")
+    description = st.text_input("**Description**")
+    
+    start_date_col, start_time_col, end_date_col, end_time_col = st.columns(4)
+    with start_date_col:
+      start_date = st.date_input("**Start Date**", datetime.date.today(), format="MM/DD/YYYY", min_value=datetime.date.today())
+    with start_time_col:
+      start_time = st.time_input("**Start Time**")
+    with end_date_col:
+      end_date = st.date_input("**End Date**", datetime.date.today(), format="MM/DD/YYYY", min_value=datetime.date.today())
+    with end_time_col:
+      end_time = st.time_input("**End Time**")
+    
+    start_date_time = datetime.datetime.combine(start_date, start_time)
+    end_date_time = datetime.datetime.combine(end_date, end_time)
+    
+    location = st.text_input("**Location**")
+    uploaded_file = st.file_uploader("Upload an image. This image will be used as the cover photo on the website.", type=["png", "jpg", "jpeg"])
+    submit = st.form_submit_button("**Submit**")
+
+  if submit:
+    event = Event(name, description, start_date_time, end_date_time, location)
+    
+    if uploaded_file is not None:
+      res = upload_image_file(uploaded_file)
+      if res.status_code == 200:
+        st.toast("Image uploaded", icon='📷')
+      else:
+        st.error("Image upload failed. Default image will be used.")
+    else:
+      st.warning("No image uploaded. Default image will be used.")
+    
+    # TODO: include obtained image URL in event object
+    res = post_event(event)
+    if res.status_code == 200:
+      st.toast("Event Submitted", icon='✨')
+    else:
+      st.error("Event submission failed.", res.data)
+
+
+def dashboard():
+  st.title("Events dashboard")
+  st.subheader("Family Leaderboard")
+  fam_scores = get_fam_scores().data
+  st.bar_chart(fam_scores)
+
 
 def events_view():
-  print("works")
-  event_add_button = st.button("**Add Event**", on_click=handle_create_event)
+  dashboard()
   event_list()
+
+
+def post_event_view():
+  st.title("Post an event")
+  st.write("Use the form below to post an event!")
+  st.write("The event will be shown on the SSA website, and Ah Gong will be notify members when the event is coming up!")
+  post_event_form()

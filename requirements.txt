@@ -1,2 +1,6 @@
 streamlit==1.29.0
 requests==2.31.0
+extra-streamlit-components==0.1.60
+google-auth==2.26.2
+httpx-oauth==0.13.1
+python-dotenv==1.0.0
